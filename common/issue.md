@@ -68,12 +68,71 @@
    
 
 3. 什么是aop
-   aop就是面向切面编程，是一种横向编程方式，将散落在程序中核心业务模块的
-   公用代码抽取出来，组装成一个可以重用的模块，这个模块叫切面，然后通过
-   横向编程，打开程序内部，将切面以动态代理的方式植入
+
+   aop就是`面向切面编程`，是一种`横向编程方式`，将散落在程序中核心业务模块的
+   公用代码抽取出来，组装成一个可以重用的模块，这个模块叫`切面`，然后通过
+   横向编程，打开程序内部，将切面以`动态代理`的方式植入
+
+   ``` xml
+    <!--创建spring核心配置文件，导入aop约束 -->
+        <beans xmlns="http://www.springframework.org/schema/beans"
+	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	     xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	     xmlns:mvc="http://www.springframework.org/schema/mvc"
+	     xsi:schemaLocation="
+	     http://www.springframework.org/schema/beans 
+	     http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+	     http://www.springframework.org/schema/context 
+	     http://www.springframework.org/schema/context/spring-context-4.3.xsd
+	     http://www.springframework.org/schema/mvc
+	     http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+	     http://www.springframework.org/schema/jdbc 
+	     http://www.springframework.org/schema/jdbc/spring-jdbc-4.3.xsd
+         http://www.springframework.org/schema/tx 
+         http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+         </beans>
+   ```
 
 4. 线程池
    线程池就是，当有一个线程开启时会往线程池队列中添加一个线程，之后的线程
-   都会按顺序进行排列，当线程调用run方法时，按CPU的想法执行线程，线程不能
-   超过线程池最大数，当超过线程最大数后会在线程池外排队。
+   都会`按顺序进行排列`，当线程调用`run`方法时，按CPU的想法执行线程，线程不能
+   超过线程池`最大数`，当超过线程最大数后会在线程池外`排队`。
+
+   ``` java
+   public class Test {
+     public static void main(String[] args) {   
+         ThreadPoolExecutor executor = new ThreadPoolExecutor(5, 10, 200, TimeUnit.MILLISECONDS,
+                 new ArrayBlockingQueue<Runnable>(5));
+          
+         for(int i=0;i<15;i++){
+             MyTask myTask = new MyTask(i);
+             executor.execute(myTask);
+             System.out.println("线程池中线程数目："+executor.getPoolSize()+"，队列中等待执行的任务数目："+
+             executor.getQueue().size()+"，已执行玩别的任务数目："+executor.getCompletedTaskCount());
+         }
+         executor.shutdown();
+     }
+    }
+     
+    class MyTask implements Runnable {
+       private int taskNum;
+     
+       public MyTask(int num) {
+           this.taskNum = num;
+       }
+     
+       @Override
+       public void run() {
+           System.out.println("正在执行task "+taskNum);
+           try {
+               Thread.currentThread().sleep(4000);
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+           }
+           System.out.println("task "+taskNum+"执行完毕");
+       }
+     }
+   ```
+
+   在不加锁的情况下，线程的运行顺序完全看cup自己来执行
 
