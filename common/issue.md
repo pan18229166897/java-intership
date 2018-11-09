@@ -36,11 +36,36 @@
 
 
 2. 控制反转和依赖注入
-   控制反转指的是程序中对象的创建交由ioc容器，程序只需要被动的接收，对象
-   交给ioc容器控制，反转是指对象的创建权得到反转
-   依赖注入当a类中使用了b类的对象，这就形成了依赖关系，因为现在对象交给
-   容器创建，那么依赖关系也交给容器进行维护，通过容器中的setter方法，为
-   属性注入一个对应的对象
+
+    控制反转指的是程序中对象的创建交由`ioc容器`，程序只需要被动的接收，对象交给ioc容器控制，反转是指`对象的创建权得到反转`依赖注入当a类中使用了b类的对象，这就形成了依赖关系，因为现在对象交给容器创建，那么依赖关系也交给容器进行维护，通过容器中的`setter`方法，为属性注入一个对应的对象
+
+    > 利用`元注解`方式实现 @Autowired
+    >> 通过@Autowired自动装配方式，从IoC容器中去查找到，并返回给该属性
+
+    ``` xml
+     <!-- 事务管理器 -->
+    <bean id="transManager"
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="ds"></property>
+    </bean>
+
+    <!-- 扫描sql映射,并自动byType注入dao -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="ssf"></property>
+        <property name="basePackage" value="dao"></property>
+    </bean>
+    ```
+
+    ``` java
+    @RestController    //使用RestController则无法返回jsp和html页面，专门用于返回json
+    @RequestMapping("/bill") //解析后台url时使用，相当于地址映射到的方法位置
+    public class BillAction {
+        @Autowired   //自动装配方式，从IoC容器中去查找到，并返回给该属性
+	    private BillBiz billbiz;
+    }
+        
+    ```
+   
 
 3. 什么是aop
    aop就是面向切面编程，是一种横向编程方式，将散落在程序中核心业务模块的
