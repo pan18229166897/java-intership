@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-4.3.xsd
+	http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+	http://www.springframework.org/schema/jdbc 
+	http://www.springframework.org/schema/jdbc/spring-jdbc-4.3.xsd
+    http://www.springframework.org/schema/tx 
+    http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+
+	<!-- 扫描带有元注解的包中的类，相等于声明了许多的Bean对象 -->
+	<context:component-scan base-package="com.accp.springmvc" />
+
+	<!-- 启用事务的元注解 -->
+	<tx:annotation-driven />
+
+	<!-- 注解驱动 -->
+	<mvc:annotation-driven/>
+
+	<!-- 1. 配置数据源 -->
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName">
+			<value>com.mysql.jdbc.Driver</value>
+		</property>
+		<property name="url">
+			<value>jdbc:mysql://localhost:3306/easy?characterEncoding=utf8</value>
+		</property>
+		<property name="username">
+			<value>root</value>
+		</property>
+		<property name="password">
+			<value>123</value>
+		</property>
+	</bean>
+	<!-- 2. 配置事务管理 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	
+	<!-- 忽略静态资源:由tomcat按默认方式处理精态资源，不同过springmvc框架 -->
+	<mvc:default-servlet-handler />
+	<!-- 5. 配置mybitasSqlSessionFactoryBean -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- 配置别名路径 -->
+		<property name="typeAliasesPackage" value="com.accp.springmvc.pojo"></property>
+	</bean>
+	<!-- 6. 自动扫描所有的Dao[Mapper](和xml映射文 件) ,自动创建所有的dao的实现类 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.accp.springmvc.mapper"></property>
+	</bean>
+
+</beans>

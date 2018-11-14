@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base href="/easyUI/"/>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+
+<script type="text/javascript" src="js/jquery-easyui-1.3.3/jquery.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="js/jquery-easyui-1.3.3/jquery.easyui.min.js" charset="utf-8"></script>
+<link rel="stylesheet" href="js/jquery-easyui-1.3.3/themes/default/easyui.css" type="text/css"></link>
+<link rel="stylesheet" href="js/jquery-easyui-1.3.3/themes/icon.css" type="text/css"></link>
+<script type="text/javascript" src="js/jquery-easyui-1.3.3/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript">
+	$(function(){
+	/* 	$("#dd").dialog({
+			model:true,
+			title:'My Dialog'
+		})
+		 */
+		
+		datagrid.editRow = undefined;
+		datagrid = $("#datagrid").datagrid({
+			url:'easy/home',
+			title:'aaa',
+			iconCls:'icon-save',
+			pagination:true,
+			pageSize:5,
+			pageNumber:1,
+			pageList:[5,10,20],
+			fit:true,
+			fitColumns:true,
+			nowarp:false,//自动换行
+			border:false,
+			idFieid:'id',//跨页操作增删改
+			columns:[ [{
+				title:'编号',
+				field:'id',
+				width:100
+				},{
+				title:'姓名',
+				field:'name',
+				width:100,
+				editor:{
+					type:'validatebox',
+					options:{
+						required:true
+					}
+				}
+				},{
+				title:'密码',
+				field:'password',
+				width:100,
+				editor:{
+					type:'validatebox',
+					options:{
+						required:true
+					}
+				}
+				},{
+				title:'地址',
+				field:'address',
+				width:100,
+				editor:{
+					type:'validatebox',
+					options:{
+						required:true
+					}
+				}
+				},{
+				title:'生日',
+				field:'birthday',
+				width:100,
+				editor:{
+					type:'datebox',
+					options:{
+						required:true
+					}
+				}
+						}] ],//多级表头
+				toolbar:[{
+					text:'增加',
+					iconCls:'icon-add',
+					handler:function(){
+						if(datagrid.editRow !=undefined){
+							datagrid.datagrid('endEdit',datagrid.editRow)
+						}
+						datagrid.datagrid('insertRow',{
+							index:0,
+							row:{
+								
+							}
+						});
+						datagrid.datagrid('beginEdit',0)
+						datagrid.editRow=0	;
+					}
+				},'-',{
+					text:'删除',
+					iconCls:'icon-remove',
+					handler:function(){
+						var rows = datagrid.datagrid('getSelections')
+						console.info(rows);
+						var id=[];
+						if(rows.length>0){
+							for(var i = 0;i<rows.length;i++){
+								$.ajax({
+									
+									url:"easy/delete?id="+rows[i].id,
+									type:"post",
+									contentType:"application/json",
+									success:function(){
+										datagrid.datagrid('load');
+										datagrid.datagrid('unselectAll');
+									},
+									error:function(xhr){
+										alert(xhr.responseText);
+										
+									}
+								});
+							}
+							
+						}
+						
+					}
+				},'-',{
+					text:'修改',
+					iconCls:'icon-edit',
+					handler:function(){
+						var rows = datagrid.datagrid('getSelections');
+						if(rows.length ==1){
+							$("#dd").show().dialog({
+								model:true,
+								title:'修改',
+								closed: false,    
+							    cache: false
+
+							})
+							console.info(rows)
+							$("#name1").val(rows[0].name);
+							$("#password").val(rows[0].password);
+							$("#address").val(rows[0].address);
+							$("#birthday").val(rows[0].birthday);
+							$("#id1").val(rows[0].id);
+						}
+					}
+				},'-',{
+					text:'保存',
+					iconCls:'icon-save',
+					handler:function(){
+						datagrid.datagrid('endEdit',datagrid.editRow)
+					}
+				},'-',{
+					text:'取消编辑',
+					iconCls:'icon-redo',
+					handler:function(){
+						datagrid.editRow=undefined;
+						datagrid.datagrid('rejectChanges')
+						datagrid.datagrid('unselectAll')
+					}
+				}],
+				onAfterEdit:function(rowIndex,rowData,changes){
+					var inserted = datagrid.datagrid('getChanges','inserted');
+					var updated = datagrid.datagrid('getChanges','updated');
+					if(inserted.length>0){
+						url='easy/insert';
+					}
+					if(updated.length>0){
+						url='easy/update';
+					}
+					
+					datagrid.editRow=undefined;
+					var data = {
+							"id":rowData.id,
+							"name":rowData.name,
+							"password":rowData.password,
+							"address":rowData.address,
+							"birthday":rowData.birthday
+					}
+					$.ajax({
+						type:"post",
+						url:url,
+						contentType:"application/json",
+						data:JSON.stringify(data),
+						success:function(){
+							console.info(data); 
+						},
+						error:function(xhr){
+							datagrid.datagrid('rejectChanges');
+							alert(xhr.responseText);
+						}
+						
+					}) 
+					datagrid.editRow=undefined;
+				},
+				onDblClickRow:function(rowIndex,rowData){
+					if(datagrid.editRow != undefined){
+						datagrid.datagrid('endEdit',datagrid.editRow);
+					}
+					if(datagrid.editRow == undefined){
+						datagrid.datagrid('beginEdit',rowIndex);
+						datagrid.editRow=rowIndex;
+					}
+				}
+		}) 
+	})
+	function cx(){
+		datagrid.datagrid('load',{
+			name:$("#name").val()
+		})
+	}
+	function bc(){
+		var data={
+			"id":$("#id1").val(),
+			"name":$("#name1").val(),
+			"address":$("#address").val(),
+			"password":$("#password").val(),
+			"birthday":$("#birthday").val()
+		}
+		$.ajax({
+			type:"post",
+			url:"easy/update",
+			data:JSON.stringify(data),
+			contentType:"application/json",
+			success:function(){
+				datagrid.datagrid('load');
+				datagrid.datagrid('unselectAll');
+			},
+			error:function(xhr){
+				alert(xhr.responseText)
+			}
+		})
+		$("#dd").dialog('close');
+	}
+</script>
+</head>
+
+<body>
+	 <div id="dd"  style="width:400px;height:200px;display:none;">
+	 	姓名：<input type="text" id="name1">
+	 	密码：<input type="text" id="password">
+	 	地址：<input type="text" id="address">
+	 	生日：<input type="text" id="birthday">
+	 	<input type="hidden" id="id1">
+	 	<input type="button" value="保存" onclick="bc()">
+	 </div>
+	 <input type="text" class="easyui-datebox" required="required">
+<!-- 	<table class="easyui-datagrid">   
+    <thead>   
+        <tr>   
+            <th data-options="field:'code'">编码</th>   
+            <th data-options="field:'name'">名称</th>   
+            <th data-options="field:'price'">价格</th>   
+        </tr>   
+    </thead>   
+    <tbody>   
+        <tr>   
+            <td>001</td><td>name1</td><td>2323</td>   
+        </tr>   
+        <tr>   
+            <td>002</td><td>name2</td><td>4612</td>   
+        </tr>   
+    </tbody>   
+</table>   -->
+<table id="datagrid"><input type="text" id="name"><input type="button" value="查询" onclick="cx()"></table>
+
+</body>
+</html>
